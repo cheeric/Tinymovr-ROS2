@@ -327,8 +327,8 @@ void TinymovrJoint::read(const ros::Time& time, const ros::Duration& period)
         for (int i=0; i<servos.size(); i++)
         {
             const double ticks_to_rads = 1.0/rads_to_ticks[i];
-            joint_position_state[i] = servos[i].encoder.get_position_estimate() * ticks_to_rads;
-            joint_velocity_state[i] = servos[i].encoder.get_velocity_estimate() * ticks_to_rads;
+            joint_position_state[i] = servos[i].sensor.user_frame.get_position_estimate() * ticks_to_rads;
+            joint_velocity_state[i] = servos[i].sensor.user_frame.get_velocity_estimate() * ticks_to_rads;
             joint_effort_state[i] = servos[i].controller.current.get_Iq_estimate();
         }
     }
