@@ -239,7 +239,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     ROS_DEBUG("Asserting calibrated");
     for (int i=0; i<num_joints; i++)
     {
-        ROS_ASSERT((servos[i].encoder.get_calibrated() == true) && (servos[i].motor.get_calibrated() == true));
+        ROS_ASSERT(servos[i].get_calibrated() == true);
         ROS_DEBUG("%s ok", joint_name[i].c_str());
     }
 
