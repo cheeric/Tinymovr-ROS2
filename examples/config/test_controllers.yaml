@@ -1,0 +1,8 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+
+    # This controller just reads the state from our hardware interface
+    # and publishes it to the /joint_states topic.
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster

@@ -109,9 +109,18 @@ install(DIRECTORY include/
   DESTINATION include
 )
 
-# Install any launch files.
-install(DIRECTORY launch
-  DESTINATION share/${PROJECT_NAME}
+#============================================================================
+# INSTALL EXAMPLE FILES
+# Install the example configurations and launch files so they can be used.
+#============================================================================
+install(DIRECTORY examples/description/
+  DESTINATION share/${PROJECT_NAME}/description
+)
+install(DIRECTORY examples/config/
+  DESTINATION share/${PROJECT_NAME}/config
+)
+install(DIRECTORY examples/launch/
+  DESTINATION share/${PROJECT_NAME}/launch
 )
 
 #============================================================================
