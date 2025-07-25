@@ -1,0 +1,9 @@
+<library path="tinymovr_ros2_control_interface">
+  <class name="tinymovr_ros2/TinymovrHardware"
+         type="tinymovr_ros2::TinymovrHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      The Tinymovr ros2_control hardware interface.
+    </description>
+  </class>
+</library>
