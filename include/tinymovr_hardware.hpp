@@ -17,7 +17,7 @@
 #include <tinymovr/tinymovr.hpp>
 
 // For managing library symbol visibility
-#include "tinymovr_ros2/visibility_control.h"
+#include "tinymovr_ros2/visibility_control.hpp"
 
 namespace tinymovr_ros2
 {

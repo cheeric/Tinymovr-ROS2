@@ -12,13 +12,6 @@ find_package(pluginlib REQUIRED)
 find_package(ros2_control_cmake REQUIRED)
 
 #============================================================================
-# GENERATE VISIBILITY CONTROL HEADER
-#============================================================================
-# This generates the "visibility_control.h" header required for exporting
-# library symbols correctly on different platforms.
-ament_generate_export_header(${PROJECT_NAME})
-
-#============================================================================
 # DEFINE SOURCE FILES
 #============================================================================
 # Define a variable with all source files for the hardware interface library
@@ -56,6 +49,12 @@ set(TINYMOVR_LIB_SOURCES
 # Build the hardware interface as a shared library so it can be loaded as a plugin.
 add_library(${PROJECT_NAME}_control_interface SHARED
   ${TINYMOVR_LIB_SOURCES}
+)
+
+# This definition is used by the visibility_control.hpp header
+# to correctly export symbols from the shared library.
+target_compile_definitions(${PROJECT_NAME}_control_interface
+  PRIVATE "TINYMOVR_ROS2_BUILDING_LIBRARY"
 )
 
 # Specify include directories for the library target.
