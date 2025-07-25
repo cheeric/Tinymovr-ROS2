@@ -10,10 +10,8 @@
 #include "tinymovr_hardware.hpp"
 #include "socketcan_cpp/socketcan_cpp.hpp"
 
-// Global SocketCAN object for the callback functions
 scpp::SocketCan socket_can;
 
-// Helper to convert SocketCAN status to a string for error messages
 const char* SocketCanErrorToString(scpp::SocketCanStatus status) {
     switch (status) {
         case scpp::STATUS_OK:
@@ -39,7 +37,6 @@ const char* SocketCanErrorToString(scpp::SocketCanStatus status) {
     }
 }
 
-// Callback functions required by the Tinymovr C++ library
 void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_length, bool rtr)
 {
     RCLCPP_DEBUG(rclcpp::get_logger("TinymovrHardware"), "Attempting to write CAN frame with arbitration_id: %d", arbitration_id);
@@ -83,8 +80,6 @@ void delay_us_cb(uint32_t us)
 namespace tinymovr_ros2
 {
 
-// on_init is called when the hardware interface is loaded.
-// It reads parameters from the URDF and sets up data structures.
 hardware_interface::CallbackReturn TinymovrHardware::on_init(const hardware_interface::HardwareInfo & info)
 {
     if (hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS)
@@ -94,7 +89,6 @@ hardware_interface::CallbackReturn TinymovrHardware::on_init(const hardware_inte
 
     RCLCPP_INFO(rclcpp::get_logger("TinymovrHardware"), "on_init() running...");
 
-    // Get hardware parameters from the URDF file
     try {
         can_interface_name_ = info_.hardware_parameters.at("can_interface_name");
     } catch (const std::out_of_range &ex) {
@@ -133,7 +127,6 @@ hardware_interface::CallbackReturn TinymovrHardware::on_init(const hardware_inte
     return hardware_interface::CallbackReturn::SUCCESS;
 }
 
-// This method declares what sensor values (states) the hardware can provide.
 std::vector<hardware_interface::StateInterface> TinymovrHardware::export_state_interfaces()
 {
     RCLCPP_INFO(rclcpp::get_logger("TinymovrHardware"), "export_state_interfaces() running...");
@@ -147,7 +140,6 @@ std::vector<hardware_interface::StateInterface> TinymovrHardware::export_state_i
     return state_interfaces;
 }
 
-// This method declares what commands the hardware can accept.
 std::vector<hardware_interface::CommandInterface> TinymovrHardware::export_command_interfaces()
 {
     RCLCPP_INFO(rclcpp::get_logger("TinymovrHardware"), "export_command_interfaces() running...");
@@ -161,8 +153,6 @@ std::vector<hardware_interface::CommandInterface> TinymovrHardware::export_comma
     return command_interfaces;
 }
 
-// on_activate is called when the hardware is transitioned to the 'active' state.
-// This is where hardware resources like the CAN port should be opened.
 hardware_interface::CallbackReturn TinymovrHardware::on_activate(const rclcpp_lifecycle::State &)
 {
     RCLCPP_INFO(rclcpp::get_logger("TinymovrHardware"), "Activating Hardware...");
@@ -177,7 +167,7 @@ hardware_interface::CallbackReturn TinymovrHardware::on_activate(const rclcpp_li
     for (auto& servo : servos_)
     {
         if (servo.get_protocol_hash() != avlos_proto_hash) {
-            RCLCPP_FATAL(rclcpp::get_logger("TinymovrHardware"), "Protocol hash mismatch for servo ID %d", servo.get_id());
+            RCLCPP_FATAL(rclcpp::get_logger("TinymovrHardware"), "Protocol hash mismatch for servo ID %d", servo.get_uid());
             return hardware_interface::CallbackReturn::ERROR;
         }
     }
@@ -187,7 +177,7 @@ hardware_interface::CallbackReturn TinymovrHardware::on_activate(const rclcpp_li
     for (auto& servo : servos_)
     {
         if (!servo.get_calibrated()) {
-            RCLCPP_FATAL(rclcpp::get_logger("TinymovrHardware"), "Servo ID %d is not calibrated.", servo.get_id());
+            RCLCPP_FATAL(rclcpp::get_logger("TinymovrHardware"), "Servo ID %d is not calibrated.", servo.get_uid());
             return hardware_interface::CallbackReturn::ERROR;
         }
     }
@@ -195,12 +185,12 @@ hardware_interface::CallbackReturn TinymovrHardware::on_activate(const rclcpp_li
 
     for (auto& servo : servos_)
     {
-        RCLCPP_DEBUG(rclcpp::get_logger("TinymovrHardware"), "Setting state and mode for servo ID %d", servo.get_id());
-        servo.controller.set_state(2); // Set CL_CONTROL mode
-        servo.controller.set_mode(2);  // Set Position mode
+        RCLCPP_DEBUG(rclcpp::get_logger("TinymovrHardware"), "Setting state and mode for servo ID %d", servo.get_uid());
+        servo.controller.set_state(2);
+        servo.controller.set_mode(2);
         rclcpp::sleep_for(std::chrono::milliseconds(1));
         if (servo.controller.get_state() != 2 || servo.controller.get_mode() != 2) {
-             RCLCPP_ERROR(rclcpp::get_logger("TinymovrHardware"), "Failed to set mode for servo ID %d.", servo.get_id());
+             RCLCPP_ERROR(rclcpp::get_logger("TinymovrHardware"), "Failed to set mode for servo ID %d.", servo.get_uid());
         }
     }
 
@@ -208,14 +198,13 @@ hardware_interface::CallbackReturn TinymovrHardware::on_activate(const rclcpp_li
     return hardware_interface::CallbackReturn::SUCCESS;
 }
 
-// on_deactivate is called when the hardware is transitioned to the 'inactive' state.
 hardware_interface::CallbackReturn TinymovrHardware::on_deactivate(const rclcpp_lifecycle::State &)
 {
     RCLCPP_INFO(rclcpp::get_logger("TinymovrHardware"), "Deactivating Hardware...");
     try {
         for (auto& servo : servos_)
         {
-            servo.controller.set_state(0); // Set Idle state
+            servo.controller.set_state(0);
             rclcpp::sleep_for(std::chrono::milliseconds(1));
         }
     } catch (const std::exception& e) {
@@ -226,8 +215,7 @@ hardware_interface::CallbackReturn TinymovrHardware::on_deactivate(const rclcpp_
     return hardware_interface::CallbackReturn::SUCCESS;
 }
 
-// read is called by the controller manager's control loop to get new sensor data.
-hardware_interface::CallbackReturn TinymovrHardware::read(const rclcpp::Time &, const rclcpp::Duration &)
+hardware_interface::return_type TinymovrHardware::read(const rclcpp::Time &, const rclcpp::Duration &)
 {
     try {
         for (size_t i = 0; i < servos_.size(); ++i)
@@ -239,13 +227,12 @@ hardware_interface::CallbackReturn TinymovrHardware::read(const rclcpp::Time &, 
         }
     } catch(const std::exception& e) {
         RCLCPP_ERROR(rclcpp::get_logger("TinymovrHardware"), "Error during read: %s", e.what());
-        return hardware_interface::CallbackReturn::ERROR;
+        return hardware_interface::return_type::ERROR;
     }
-    return hardware_interface::CallbackReturn::SUCCESS;
+    return hardware_interface::return_type::OK;
 }
 
-// write is called by the controller manager's control loop to send new commands.
-hardware_interface::CallbackReturn TinymovrHardware::write(const rclcpp::Time &, const rclcpp::Duration &)
+hardware_interface::return_type TinymovrHardware::write(const rclcpp::Time &, const rclcpp::Duration &)
 {
     try {
         for (size_t i = 0; i < servos_.size(); ++i)
@@ -256,14 +243,13 @@ hardware_interface::CallbackReturn TinymovrHardware::write(const rclcpp::Time &,
         }
     } catch(const std::exception& e) {
         RCLCPP_ERROR(rclcpp::get_logger("TinymovrHardware"), "Error during write: %s", e.what());
-        return hardware_interface::CallbackReturn::ERROR;
+        return hardware_interface::return_type::ERROR;
     }
-    return hardware_interface::CallbackReturn::SUCCESS;
+    return hardware_interface::return_type::OK;
 }
 
-} // namespace tinymovr_ros2
+}
 
-// This macro exports the class as a ros2_control plugin, making it discoverable.
 PLUGINLIB_EXPORT_CLASS(
   tinymovr_ros2::TinymovrHardware,
   hardware_interface::SystemInterface

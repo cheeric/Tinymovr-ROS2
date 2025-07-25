@@ -58,11 +58,16 @@ target_compile_definitions(${PROJECT_NAME}_control_interface
 )
 
 # Specify include directories for the library target.
-# This includes the project's 'include' folder and the build folder for generated headers.
-target_include_directories(${PROJECT_NAME}_control_interface PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
-  $<INSTALL_INTERFACE:include>
+target_include_directories(${PROJECT_NAME}_control_interface
+  PUBLIC
+    # Paths for downstream packages that use this library
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
+    $<INSTALL_INTERFACE:include>
+  PRIVATE
+    # Paths for compiling this library's own source files
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/tinymovr
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/socketcan_cpp
 )
 
 # Link the library against its dependencies.
@@ -72,19 +77,8 @@ ament_target_dependencies(${PROJECT_NAME}_control_interface
   pluginlib
 )
 
-# Export the plugin description file for ros2_control to discover this library.
-ros2_control_export_plugin_description_file(${PROJECT_NAME}_control_interface hardware_interface)
-
-#============================================================================
-# BUILD EXECUTABLE TARGET
-#============================================================================
-# Build the standalone node that hosts the controller manager.
-add_executable(control_node src/control_node_main.cpp)
-
-# Link the executable against its dependencies.
-ament_target_dependencies(control_node
-  rclcpp
-)
+# Export the plugin description file for pluginlib to discover this library.
+pluginlib_export_plugin_description_file(hardware_interface examples/config/tinymovr_ros2_control.xml)
 
 #============================================================================
 # INSTALLATION RULES
@@ -96,11 +90,6 @@ install(TARGETS ${PROJECT_NAME}_control_interface
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
-)
-
-# Install the standalone executable node.
-install(TARGETS control_node
-  DESTINATION lib/${PROJECT_NAME}
 )
 
 # Install all header files from the 'include' directory.

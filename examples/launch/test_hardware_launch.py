@@ -20,8 +20,8 @@ def generate_launch_description():
 
     # This is the node we wrote that hosts our hardware interface plugin
     control_node = Node(
-        package='tinymovr_ros2',
-        executable='control_node',
+        package='controller_manager',          # Use the official package
+        executable='ros2_control_node',        # Use the official executable
         parameters=[{'robot_description': robot_description}, controllers_path],
         output='screen'
     )

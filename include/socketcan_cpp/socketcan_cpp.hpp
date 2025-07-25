@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
 
 #define HAVE_SOCKETCAN_HEADERS
 

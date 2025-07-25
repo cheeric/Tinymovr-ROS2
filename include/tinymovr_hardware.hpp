@@ -17,7 +17,7 @@
 #include <tinymovr/tinymovr.hpp>
 
 // For managing library symbol visibility
-#include "tinymovr_ros2/visibility_control.hpp"
+#include "visibility_control.hpp"
 
 namespace tinymovr_ros2
 {
@@ -25,10 +25,8 @@ namespace tinymovr_ros2
 class TinymovrHardware : public hardware_interface::SystemInterface
 {
 public:
-    // Required macro for ros2_control to manage node lifecycle
     RCLCPP_SHARED_PTR_DEFINITIONS(TinymovrHardware)
 
-    // The lifecycle methods from the SystemInterface base class
     TINYMOVR_ROS2_PUBLIC
     hardware_interface::CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
 
@@ -45,13 +43,12 @@ public:
     hardware_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
 
     TINYMOVR_ROS2_PUBLIC
-    hardware_interface::CallbackReturn read(const rclcpp::Time & time, const rclcpp::Duration & period) override;
+    hardware_interface::return_type read(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
     TINYMOVR_ROS2_PUBLIC
-    hardware_interface::CallbackReturn write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
+    hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 private:
-    // Storage for the state and command values for each joint
     std::vector<double> hw_position_states_;
     std::vector<double> hw_velocity_states_;
     std::vector<double> hw_effort_states_;
@@ -60,7 +57,6 @@ private:
     std::vector<double> hw_velocity_commands_;
     std::vector<double> hw_effort_commands_;
     
-    // Tinymovr-specific hardware parameters and objects
     std::vector<Tinymovr> servos_;
     std::vector<double> rads_to_ticks_;
     std::string can_interface_name_;
