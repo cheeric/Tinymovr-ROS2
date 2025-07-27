@@ -1,4 +1,8 @@
-__Tinymovr ROS Hardware Interface__
+This is a fork of the original [tinymovr/Tinymovr-ROS](https://github.com/tinymovr/Tinymovr-ROS) repository.
+
+TO-DO: Update documentation below for ROS2
+
+__Tinymovr ROS2 Hardware Interface__
 
 A ROS package that provides hardware interfacing for the [Tinymovr](https://tinymovr.com) motor controller. This interface allows for seamless integration of Tinymovr devices with ROS-based robotic systems, offering joint state and control through ROS topics and services.
 
